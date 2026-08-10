@@ -183,7 +183,7 @@ def extract_events(mid, position_per_ticks, print_debug=False):
   if print_debug: print(f"Duration 0 notes: {duration_zero_notes}")
   if print_debug: print(f"Overlapping notes: {overlapping_notes}")
   if print_debug: print(f"Total notes: {len(notes)}")
-  print(f"Total malformed notes:{(orphan_note_off + duration_zero_notes + overlapping_notes)/len(notes)}")
+  print(f"Total malformed notes:{(orphan_note_off + duration_zero_notes + overlapping_notes)/len(notes)}") if len(notes) > 0 else print("No notes found in the MIDI file.")
   if (orphan_note_off + duration_zero_notes + overlapping_notes)/len(notes) > 0.09:
     print(mid.filename)
   return notes, metric_events, controller_events

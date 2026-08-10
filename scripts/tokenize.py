@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from mido import KeySignatureError
-from src.tokens2midi import midi2token
+from src.midi2tokens import midi2token
 
 # Example usage:
 

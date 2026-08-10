@@ -16,7 +16,7 @@ token_attributes = ["family", "bar_position", "channel", "program", "pitch", "ve
 def get_batch(vectorized_songs, seq_length, batch_size):
   # Pick {batch_size} number of tracks
   rng = np.random.default_rng()
-  track_idxs = rng.choice(len(vectorized_songs), size=batch_size, replace=False)
+  track_idxs = rng.choice(len(vectorized_songs), size=batch_size, replace=True)
 
   # Sample {seq_length} tokens from each of the tracks
   input_batch = []
@@ -237,27 +237,17 @@ def plot_losses(training_history, validation_history, validation_iterations, cur
 def train(
     params,
     model,
-    use_best_ckpt,
+    checkpoint,
     optimizer,
     scaler,
     vectorized_songs,
     validation_set,
     field2idx,
-    checkpoint_dir,
     experiment,
     device
 ):
   
   device = torch.device(device)
-
-  ### Load previously saved checkpoint ###
-  answer = input(f"[Y/N] Are you sure the checkpoint_dir is: {checkpoint_dir}? Has the checkpoint been updated?")
-  if answer.lower() != "y":
-    print("Aborting...")
-    exit()
-  os.makedirs(checkpoint_dir, exist_ok=True)
-  checkpoint_prefix = os.path.join(checkpoint_dir, "my_ckpt.pt")
-  best_checkpoint_prefix = os.path.join(checkpoint_dir, "best_ckpt.pt")
 
   # Default: start from scratch
   start_iter = 0
@@ -268,10 +258,8 @@ def train(
   validation_history = []
   validation_iterations = []
 
-  if os.path.exists(checkpoint_prefix):
-    checkpoint = torch.load(checkpoint_prefix, map_location=device) if not use_best_ckpt else torch.load(best_checkpoint_prefix, map_location=device)
-
-    model.load_state_dict(checkpoint["model_state_dict"])
+  if checkpoint is not None:
+    
     optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
 
     start_iter = checkpoint["iteration"] + 1

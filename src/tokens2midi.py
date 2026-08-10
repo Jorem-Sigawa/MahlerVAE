@@ -101,13 +101,9 @@ def token2midi(token_text_path, out_path, ticks_per_beat=480, positions_per_beat
         duration_ticks = round(duration*ticks_per_position)
         absolute_time_off = current_tick + duration_ticks
 
-        midi_msgs.append([current_tick,
-                          5,
-                          mido.Message("note_on", note=pitch, velocity=velocity, channel=channel)])
+        midi_msgs.append([current_tick, 5, mido.Message("note_on", note=pitch, velocity=velocity, channel=channel)])
 
-        midi_msgs.append([absolute_time_off,
-                          4,
-                          mido.Message("note_off", note=pitch, velocity=0, channel=channel)])
+        midi_msgs.append([absolute_time_off, 4, mido.Message("note_off", note=pitch, velocity=0, channel=channel)])
 
       elif family == "Metric": # encodes bar, position, time_signature, and tempo events
 
