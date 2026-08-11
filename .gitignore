@@ -2,6 +2,7 @@
 ckpts/
 datasets/
 sampled_bars/
+visualize_model.py
 
 __pycache__/
 *.pyc
