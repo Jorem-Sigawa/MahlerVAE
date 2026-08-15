@@ -17,3 +17,15 @@ Brahms, Bruckner, Dvorak, Holst, Mahler, Sibelius, Strauss, Tchaikovsky, and Wag
 The GPT model was able to generate convincing continuations given a musical idea, but it could not achieve long-term coherence, frequently generated repetitive motifs, and 
 most importantly, lacked musical direction. 
 </p>
+
+### Overview
+The model uses the Optimus architecture presented in [this paper](https://arxiv.org/pdf/2004.04092). This time, however, we use it as a MIDI generation model.
+The idea is that, instead of using only a transformer decoder, a transformer encoder first represents a sequence of tokens as a variable in a low-dimensional latent space.
+Thus, during training, the model learns a latent embedding space of musical ideas. We then take a sample z from the learned latent variable through a reparameterization trick:
+
+$$z = \mu + \epsilon \odot \exp\left(\frac{1}{2} \log(\sigma^2)\right)$$
+
+where $\mu$ and $\epsilon$ are vectors derived from the latent variable. During decoding, z is projected into a MEM vector $$h_{MEM}$$: a key that can be used by the decoder's self-attention blocks.
+Specifically, $$h_{MEM}$$ is an additional key vector (and hence a value vector) that queries can attend to.
+> [!NOTE]
+> The authors of the Optimus architecture proposed two different forms of latent injection: *Memory*, the one we use, and *Embedding*. *Memory* was found to be significantly more effective than *Embedding*.
