@@ -11,28 +11,28 @@ def load_checkpoint(model, checkpoint_dir, device, use_best_ckpt=True):
     if os.path.exists(checkpoint_prefix):
         checkpoint = torch.load(checkpoint_prefix, map_location=device) 
         model.load_state_dict(checkpoint["model_state_dict"])
-        return model
+        return checkpoint
     else:
         print(f"Checkpoint not found at {checkpoint_prefix}. Using the best checkpoint instead.")
         if os.path.exists(best_checkpoint_prefix):
             checkpoint = torch.load(best_checkpoint_prefix, map_location=device) 
             model.load_state_dict(checkpoint["model_state_dict"])
-            return model
+            return checkpoint
         else:
             print(f"No checkpoint found at {best_checkpoint_prefix}. The model will use randomly initialized weights.")
-            return model
+            return None
 
   elif use_best_ckpt:
     if os.path.exists(best_checkpoint_prefix):
         checkpoint = torch.load(best_checkpoint_prefix, map_location=device) 
         model.load_state_dict(checkpoint["model_state_dict"])
-        return model
+        return checkpoint
     else:
         print(f"Best checkpoint not found at {best_checkpoint_prefix}. Using the latest checkpoint instead.")
         if os.path.exists(checkpoint_prefix):
             checkpoint = torch.load(checkpoint_prefix, map_location=device) 
             model.load_state_dict(checkpoint["model_state_dict"])
-            return model
+            return checkpoint
         else:
            print(f"No checkpoint found at {checkpoint_prefix}. The model will use randomly initialized weights.")
-           return model
+           return None

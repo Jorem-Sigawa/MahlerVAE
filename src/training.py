@@ -106,9 +106,9 @@ def annealing_beta(step, total_steps, max_beta=1.0, ratio_zero=0.5, ratio_increa
 
 # Create Comet experiment to track our training run
 
-def create_experiment(params, COMET_API_KEY):
+def create_experiment(experiment_name, params, COMET_API_KEY):
   # initiate the comet experiment for tracking
-  experiment = comet_ml.Experiment(api_key=COMET_API_KEY, project_name="MahlerGPT-v3")
+  experiment = comet_ml.Experiment(api_key=COMET_API_KEY, project_name=experiment_name)
 
   # log our hyperparameters, defined above, to the experiment
   for param, value in params.items():
@@ -238,6 +238,7 @@ def train(
     params,
     model,
     checkpoint,
+    checkpoint_dir,
     optimizer,
     scaler,
     vectorized_songs,
@@ -258,6 +259,7 @@ def train(
   validation_history = []
   validation_iterations = []
 
+  # Load checkpoint
   if checkpoint is not None:
     
     optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
@@ -270,6 +272,11 @@ def train(
     validation_iterations = checkpoint.get("validation_iterations", [])
 
     print(f"Resuming from iteration {start_iter}, training loss = {checkpoint['training_loss']}")
+
+  # Specify where to save checkpoint
+  os.makedirs(checkpoint_dir, exist_ok=True)
+  checkpoint_prefix = os.path.join(checkpoint_dir, "my_ckpt.pt")
+  best_checkpoint_prefix = os.path.join(checkpoint_dir, "best_ckpt.pt")
 
   # Filter out songs that are too short for the sequence length
   training_vectorized_songs = [s for s in vectorized_songs if s.shape[0] > params["seq_length"]]
