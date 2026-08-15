@@ -1,0 +1,8 @@
+torch
+numpy
+matplotlib
+tqdm
+mido
+comet_ml
+pyyaml
+ipython
