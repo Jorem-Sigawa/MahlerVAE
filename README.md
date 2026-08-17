@@ -100,5 +100,29 @@ Perhaps the most common failure mode of Transformer-VAEs is posterior collapse--
 
 ### Results from training the sample model
 
+Two sample models--a TransformerVAE and a decoder-only transformer--was trained using the aforementioned 281-track dataset and using the configuration *config1.yaml* for 100k iterations. A validation set was also constructed by taking one track from each composer (except Strauss), giving us 9 tracks for our validation set. The entire 290-track dataset can be downloaded here:
+
+#### Training sets
+- [Late Romantic Dataset](https://drive.google.com/drive/folders/1HFO9hRI_NWQGQOf2BiDTSyS6PQ9D3naj?usp=drive_link)
+
+A planned extension to training the model with the SymphonyNet dataset is also currently being worked on. In the meantime, for personal experiments, you may also download the SymphonyNet dataset from their official site:
+
+- [SymphonyNet](https://symphonynet.github.io/)
+
+#### Plots and Discussion
+<p align="center">
+  <img
+    src="assets/transformer_vae_training_run_100k.png"
+    alt="TransVAE 100k training run"
+    width="700"
+  ><br>
+  <i>TransformerVAE training run over 100k iterations</i>
+</p>
+
+Losses from each field, reconstruction and KL losses, validation losses, as well as the training run of the decoder-only transformer and other metrics may be viewed on Comet.
+[View the full training run on Comet!](https://www.comet.com/jorem-sigawa/mahlervae/view/new/panels)
+> Note that due to Colab's session limits, the TransformerVAE's run was fragmented from 0 to 70k and 70k to 100k.
+
+
 
 
