@@ -65,7 +65,7 @@ There are two terms in the loss function that we are trying to optimize:
 
 $$\mathcal{L}_{\mathrm{KL}}=\frac{1}{2DB}\sum_{i=1}^{D}\sum_{j=1}^{B}\left(\sigma_{ij}^{2}+\mu_{ij}^{2}-1-\log\sigma_{ij}^{2}\right)$$
       
-2. **Reconstruction loss ($$L_{x}$$)**: standard cross-entropy loss between logits and labels. Since we are using a compound word tokenization scheme, we need to compute a loss for each field. If $$W_{F}$$ denotes the field weights (set via config.yaml), the loss term is given by:
+2. **Reconstruction loss ($$L_{x}$$)**: standard cross-entropy loss between logits and labels. Since we are using a compound word tokenization scheme, we need to compute a loss for each field. If $$W_{F}$$ denotes the field weights (set via *config.yaml*), the loss term is given by:
 
 $$\mathcal{L_{x}}=\frac{\sum_F W_F \cdot \mathrm{CrossEntropy}(\mathrm{logits}_F,\mathrm{labels}_F)}{\sum_F W_F}$$
    
@@ -94,7 +94,7 @@ Perhaps the most common failure mode of Transformer-VAEs is posterior collapse--
               num_layers: 4
    
 2. **KL thresholding**\
-   Normally, the $L_{KL}$ objective tries to drive each of its elements $KL_{i}$ towards zero in a step known as regularization. However, that pushes the i'th dimension's posterior to look nearly identical to the prior, carrying very little information about     $x$. With thresholding, we set some threshold *dim_target_kl* (via *config.yaml*) below which the objective no longer tries to optimize that dimension's $KL_{i}$. In the code, this is equivalent to manually setting        KL_{i} to zero once its value goes below dim_target_kl. Thus, KL thresholding gives each latent dimension some free capacity to encode information
+   Normally, the $L_{KL}$ objective tries to drive each of its elements $KL_{i}$ towards zero in a step known as regularization. However, that pushes the i'th dimension's posterior to look nearly identical to the prior, carrying very little information about     $x$. With thresholding, we set some threshold *dim_target_kl* (via *config.yaml*) below which the objective no longer tries to optimize that dimension's $KL_{i}$. In the code, this is equivalent to manually setting        $KL_{i}$ to zero once its value goes below dim_target_kl. Thus, KL thresholding gives each latent dimension some free capacity to encode information
 3. **KL annealing**\
    KL annealing lets the model learn to use $z$ before heavily regularizing $z$. Instead of starting training with the full KL weight $\beta$, we define a *max_beta* that we gradually climb up to during the course of training. *ratio_zero* defines a threshold such that the current $\beta$ is zero if *percent_iteration* = *num_iterations*/*total_iterations* is below *ratio_zero*, after which the current $\beta$ linearly increases to max_beta until *percent_iteration* reaches *ratio_zero* + *ratio_increase*. The hyperparameters *max_beta*, *ratio_zero*, and *ratio_increase* must be defined in *config.yaml*.
 
@@ -121,6 +121,8 @@ A planned extension to training the model with the SymphonyNet dataset is also c
 
 Losses from each field, reconstruction and KL losses, validation losses, as well as the training run of the decoder-only transformer and other metrics may be viewed on Comet.
 [View the full training run on Comet!](https://www.comet.com/jorem-sigawa/mahlervae/view/new/panels)
+
+It is interesting to note that nearly all losses of both TransformerVAE and decoder-only transformer models converged to roughly the same value. 
 > Note that due to Colab's session limits, the TransformerVAE's run was fragmented from 0 to 70k and 70k to 100k.
 
 <p align="center">
@@ -133,6 +135,7 @@ Losses from each field, reconstruction and KL losses, validation losses, as well
 </p>
 
 As shown in the figure above, all 64 latent dimensions are active (that is, $KL_{i}$ > 0.01), demonstrating that we have prevented posterior collapse and that the latent representation $z$ is being used by the decoder meaningfully. 
+
 
 #### Checkpoints
 The sample model checkpoints can be downloaded here. There are two checkpoints. *my_ckpt.pt* contains weights at the 100k'th iteration, while *best_ckpt.pt* contains weights at the iteration where the validation loss was smallest for the entire 100k training run.
