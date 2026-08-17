@@ -118,7 +118,7 @@ def create_experiment(experiment_name, params, COMET_API_KEY):
   return experiment
 
 # Define training step and validation loss computation
-def train_step(x, y, step, total_steps, model, optimizer, scaler, field2idx, max_beta=1.0, ratio_zero=0.5, ratio_increase=0.25):
+def train_step(x, y, step, total_steps, model, optimizer, scaler, field2idx, dim_target_kl=0.5, max_beta=1.0, ratio_zero=0.5, ratio_increase=0.25):
   # set model to train
   model.train()
 
@@ -129,7 +129,7 @@ def train_step(x, y, step, total_steps, model, optimizer, scaler, field2idx, max
   with torch.amp.autocast(device_type="cuda", dtype=torch.float16):
     logits, mu, logvar = model(x)
     beta = annealing_beta(step, total_steps, max_beta, ratio_zero, ratio_increase)
-    total_loss, rec_loss, kl_loss_value, kl_per_dim, field_losses = vae_loss_function(y, logits, mu, logvar, beta, field2idx)
+    total_loss, rec_loss, kl_loss_value, kl_per_dim, field_losses = vae_loss_function(y, logits, mu, logvar, beta, field2idx, dim_target_kl)
 
   # backprop (first multiples loss by a large amount)
   scaler.scale(total_loss).backward()
@@ -309,7 +309,7 @@ def train(
     x_batch, y_batch = get_batch(training_vectorized_songs, params["seq_length"], params["batch_size"])
     x_batch, y_batch = x_batch.to(device), y_batch.to(device)
 
-    total_loss, rec_loss, kl_loss_value, kl_per_dim, field_losses = train_step(x_batch, y_batch, iter, total_steps, model, optimizer, scaler, field2idx, max_beta=params["max_beta"], ratio_zero=params["ratio_zero"], ratio_increase=params["ratio_increase"])
+    total_loss, rec_loss, kl_loss_value, kl_per_dim, field_losses = train_step(x_batch, y_batch, iter, total_steps, model, optimizer, scaler, field2idx, dim_target_kl=params["dim_target_kl"], max_beta=params["max_beta"], ratio_zero=params["ratio_zero"], ratio_increase=params["ratio_increase"])
 
     # Logging
     training_loss = total_loss.item()
