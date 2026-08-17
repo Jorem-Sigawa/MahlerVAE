@@ -109,7 +109,7 @@ A planned extension to training the model with the SymphonyNet dataset is also c
 
 - [SymphonyNet](https://symphonynet.github.io/)
 
-#### Plots and Discussion
+#### Plots
 <p align="center">
   <img
     src="assets/transformer_vae_training_run_100k.png"
@@ -122,6 +122,24 @@ A planned extension to training the model with the SymphonyNet dataset is also c
 Losses from each field, reconstruction and KL losses, validation losses, as well as the training run of the decoder-only transformer and other metrics may be viewed on Comet.
 [View the full training run on Comet!](https://www.comet.com/jorem-sigawa/mahlervae/view/new/panels)
 > Note that due to Colab's session limits, the TransformerVAE's run was fragmented from 0 to 70k and 70k to 100k.
+
+<p align="center">
+  <img
+    src="assets/kl_active_dimensions.png"
+    alt="TransVAE 100k training run"
+    width="700"
+  ><br>
+  <i>Active latent dimensions</i>
+</p>
+
+As shown in the figure above, all 64 latent dimensions are active (that is, $KL_{i}$ > 0.01), demonstrating that we have prevented posterior collapse and that the latent representation $z$ is being used by the decoder meaningfully. 
+
+#### Checkpoints
+The sample model checkpoints can be downloaded here. There are two checkpoints. *my_ckpt.pt* contains weights at the 100k'th iteration, while *best_ckpt.pt* contains weights at the iteration where the validation loss was smallest for the entire 100k training run.
+
+[Download TransformerVAE model checkpoints here](https://drive.google.com/drive/folders/1Q_jipHsfXz33HYqb0uqnn-U-QxKU4law?usp=drive_link)
+
+[Download decoder-only transformer model checkpoints here](https://drive.google.com/drive/folders/14pYicsTmfp9jJ0XKpKtyhHKOmbTBg2Hw?usp=drive_link)
 
 
 
