@@ -177,18 +177,18 @@ Here's some sample generations from both the TransformerVAE model and decoder-on
 
 | Sample 1 | Sample 2 | Sample 3 |
 |:---:|:---:|:---:|
-| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer0.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE0.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer1.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE1.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer2.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE2.mp3) |
+| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer0.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE0.mp4) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer1.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE1.mp4) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer2.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE2.mp4) |
 
 ### Brahms
 
 | Sample 1 | Sample 2 | Sample 3 |
 |:---:|:---:|:---:|
-| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer0.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE0.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer1.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE1.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer2.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE2.mp3) |
+| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer0.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE0.mp4) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer1.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE1.mp4) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer2.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE2.mp4) |
 
 ### Dvořák
 
 | Sample 1 | Sample 2 | Sample 3 |
 |:---:|:---:|:---:|
-| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer0.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE0.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer1.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE1.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer2.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE2.mp3) |
+| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer0.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE0.mp4) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer1.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE1.mp4) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer2.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE2.mp4) |
 
 
