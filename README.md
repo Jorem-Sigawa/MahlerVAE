@@ -173,6 +173,22 @@ This is the core idea motivating the architecture: can we move from one musical 
 ### Generated samples
 Here's some sample generations from both the TransformerVAE model and decoder-only transformer model for comparison. We use input prompts, all belonging in the validation set, from Dvorak, Beethoven, and Brahms. At the end, we use the TransformerVAE model for interpolative generation on a Mahler prompt.
 
+### Beethoven
 
+| Sample 1 | Sample 2 | Sample 3 |
+|:---:|:---:|:---:|
+| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer0.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE0.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer1.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE1.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer2.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE2.mp3) |
+
+### Brahms
+
+| Sample 1 | Sample 2 | Sample 3 |
+|:---:|:---:|:---:|
+| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer0.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE0.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer1.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE1.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer2.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE2.mp3) |
+
+### Dvořák
+
+| Sample 1 | Sample 2 | Sample 3 |
+|:---:|:---:|:---:|
+| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer0.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE0.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer1.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE1.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer2.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE2.mp3) |
 
 
