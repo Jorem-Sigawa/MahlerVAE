@@ -175,20 +175,120 @@ Here's some sample generations from both the TransformerVAE model and decoder-on
 
 ### Beethoven
 
-| Sample 1 | Sample 2 | Sample 3 |
-|:---:|:---:|:---:|
-| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer0.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE0.mp4) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer1.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE1.mp4) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer2.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE2.mp4) |
+<table>
+<tr>
+  <th width="33%">Sample 1</th>
+  <th width="33%">Sample 2</th>
+  <th width="33%">Sample 3</th>
+</tr>
+<tr>
+  <td align="center" valign="top">
+    <b>Decoder-only Transformer</b><br><br>
+    <video src="https://github.com/user-attachments/assets/ae03d6c4-0812-4002-bdfc-3c2311475e40" width="100%" controls></video>
+    <br>
+    <b>TransformerVAE</b><br><br>
+    <video src="https://github.com/user-attachments/assets/1f060db6-02f0-478b-a8e2-f0544a0d4517" width="100%" controls></video>
+  </td>
+
+  <td align="center" valign="top">
+    <b>Decoder-only Transformer</b><br><br>
+    <video src="https://github.com/user-attachments/assets/ffb3f4cf-abef-45df-9cdf-805cfff2ef1d" width="100%" controls></video>
+    <br>
+    <b>TransformerVAE</b><br><br>
+    <video src="https://github.com/user-attachments/assets/c89ffd96-fb88-4601-ac90-b9ebb7867d45" width="100%" controls></video>
+  </td>
+
+  <td align="center" valign="top">
+    <b>Decoder-only Transformer</b><br><br>
+    <video src="https://github.com/user-attachments/assets/546cb20e-0025-41f4-87fc-0e54e1ef6b2b" width="100%" controls></video>
+    <br>
+    <b>TransformerVAE</b><br><br>
+    <video src="https://github.com/user-attachments/assets/944123da-84ea-490e-827a-db8cfa016a54" width="100%" controls></video>
+  </td>
+</tr>
+</table>
+
 
 ### Brahms
 
-| Sample 1 | Sample 2 | Sample 3 |
-|:---:|:---:|:---:|
-| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer0.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE0.mp4) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer1.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE1.mp4) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer2.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE2.mp4) |
+<table>
+<tr>
+  <th width="33%">Sample 1</th>
+  <th width="33%">Sample 2</th>
+  <th width="33%">Sample 3</th>
+</tr>
+<tr>
+  <td align="center" valign="top">
+    <b>Decoder-only Transformer</b><br><br>
+    <video src="https://github.com/user-attachments/assets/0f86d406-1626-4ab6-a243-80f0bd3d1c27" width="100%" controls></video>
+    <br>
+    <b>TransformerVAE</b><br><br>
+    <video src="https://github.com/user-attachments/assets/2bbc08a6-7c73-4642-be76-4f690728bee8" width="100%" controls></video>
+  </td>
+
+  <td align="center" valign="top">
+    <b>Decoder-only Transformer</b><br><br>
+    <video src="https://github.com/user-attachments/assets/7ed179cc-5b55-47a3-ab66-8e7b1ba67360" width="100%" controls></video>
+    <br>
+    <b>TransformerVAE</b><br><br>
+    <video src="https://github.com/user-attachments/assets/7486461b-b171-4062-8b77-4aa0aa986c84" width="100%" controls></video>
+  </td>
+
+  <td align="center" valign="top">
+    <b>Decoder-only Transformer</b><br><br>
+    <video src="https://github.com/user-attachments/assets/1b07d563-75e7-4c14-9508-409c1a9da40e" width="100%" controls></video>
+    <br>
+    <b>TransformerVAE</b><br><br>
+    <video src="https://github.com/user-attachments/assets/0ba01a84-2dfd-4928-98a2-335615c2c723" width="100%" controls></video>
+  </td>
+</tr>
+</table>
+
 
 ### Dvořák
 
-| Sample 1 | Sample 2 | Sample 3 |
-|:---:|:---:|:---:|
-| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer0.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE0.mp4) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer1.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE1.mp4) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer2.mp4)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE2.mp4) |
+<table>
+<tr>
+  <th width="33%">Sample 1</th>
+  <th width="33%">Sample 2</th>
+  <th width="33%">Sample 3</th>
+</tr>
+<tr>
+  <td align="center" valign="top">
+    <b>Decoder-only Transformer</b><br><br>
+    <video src="https://github.com/user-attachments/assets/aa7fd187-1505-480f-80b2-10270a659a9b" width="100%" controls></video>
+    <br>
+    <b>TransformerVAE</b><br><br>
+    <video src="https://github.com/user-attachments/assets/26359c8c-3672-45ca-8c64-f0ae57a28427" width="100%" controls></video>
+  </td>
+
+  <td align="center" valign="top">
+    <b>Decoder-only Transformer</b><br><br>
+    <video src="https://github.com/user-attachments/assets/0ce3f690-4817-4811-8a7c-43752ca4cf68" width="100%" controls></video>
+    <br>
+    <b>TransformerVAE</b><br><br>
+    <video src="https://github.com/user-attachments/assets/9bf31daf-eb0b-4046-97e8-fa0abe87f0cf" width="100%" controls></video>
+  </td>
+
+  <td align="center" valign="top">
+    <b>Decoder-only Transformer</b><br><br>
+    <video src="https://github.com/user-attachments/assets/2707a08e-ecf0-4e4e-b1c6-a0f45e21e9e0" width="100%" controls></video>
+    <br>
+    <b>TransformerVAE</b><br><br>
+    <video src="https://github.com/user-attachments/assets/5a0cbb0f-951b-40bd-b279-d796093fcc05" width="100%" controls></video>
+  </td>
+</tr>
+</table>
+
+### Mahler
+
+https://github.com/user-attachments/assets/dc279bb4-4c18-4010-867f-25ee925f5538
+
+
+
+
+
+
+
 
 
