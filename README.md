@@ -144,6 +144,51 @@ The sample model checkpoints can be downloaded here. There are two checkpoints. 
 
 [Download decoder-only transformer model checkpoints here](https://drive.google.com/drive/folders/14pYicsTmfp9jJ0XKpKtyhHKOmbTBg2Hw?usp=drive_link)
 
+## Generation
+A crude form of generation involves simply passing an input prompt to the model and sampling from the "softmaxed" logits of the decoder autoregressively. However, without other guardrails in place, the model tends to produce long, repetitive, unbroken chains of controller or note events and with very sparse emissions of metric and positional tokens (see the *generation_constraints.py* files for more information). This does not mean that the model has failed to learn, but we do need a robust generation scheme to harness its full potential. Admittedly, such a task was simply beyond my depth, and I turned to Codex for assisted stable generation. It produced two files: *generation_constraints1.py* and *generation_constraints2.py*. *generation_constraints2.py* appears to excel for non-interpolative generation, successfully avoiding repetitive motifs, whereas we found *generation_constraints1.py* better for interpolative generation, but you may experiment with using *generation_constraints2.py* also.
 
+### Interpolation
+This is the core idea motivating the architecture: can we move from one musical idea (say, a quiet chorale) to another (say, a symphonic climax) by moving through the latent space? We encode two prompts: the start prompt and the end prompt, forming the endpoints of our path in latent space. We then use linear interpolation to move through latent space:
+
+    def interpolated_latent(bars_generated):
+      alpha = ((bars_generated.float() - interpolation_start_bar) / interpolation_length_bars).clamp(0.0, 1.0).unsqueeze(1)
+      return z1 + alpha * (z2 - z1) 
+      
+### Generation guidelines
+- You must first tokenize your input prompt/s using *tokenize.ipynb*.
+- *bar_start* refers to the bar at which the model starts generation. Note that your prompt *must* have more number of bars than *bar_start*.
+- It is recommended you use a multiple of 4 + 1 (4n + 1) for your *bar_start*.
+- For interpolative generation, you may extract samples from your input prompt between *bar_start* and *bar_end* using *sample_bars.ipynb*
+- It is recommended to keep *interpolation_start_bar* low (e.g., 1 or 5). Otherwise, the model may start interpolating when degeneration has started to occur.
+- The model must produce *interpolation_length_bars* before reaching the end of your *generation_length* for complete interpolation. As a rule of thumb, there are about 50 tokens per bar, thus if your *interpolation_length_bars* = 24, you must have at least a *generation_length* = 50*200 = 1200, though we recommend thrice (3600) this to be sure.
+- You may choose which generation_constraints.py file to use by going over to generations.py and changing
+
+    > from .generation_constraints1 import CompoundREMIGenerationConstraints, generate_constrained_tokens
+    
+    to
+    
+    > from .generation_constraints2 import CompoundREMIGenerationConstraints, generate_constrained_tokens
+
+
+### Generated samples
+Here's some sample generations from both the TransformerVAE model and decoder-only transformer model for comparison. We use input prompts, all belonging in the validation set, from Dvorak, Beethoven, and Brahms. At the end, we use the TransformerVAE model for interpolative generation on a Mahler prompt.
+
+### Beethoven
+
+| Sample 1 | Sample 2 | Sample 3 |
+|:---:|:---:|:---:|
+| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer0.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE0.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer1.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE1.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBeethoven-transformer2.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBeethoven-TransformerVAE2.mp3) |
+
+### Brahms
+
+| Sample 1 | Sample 2 | Sample 3 |
+|:---:|:---:|:---:|
+| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer0.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE0.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer1.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE1.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewBrahms-transformer2.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewBrahms-TransformerVAE2.mp3) |
+
+### Dvořák
+
+| Sample 1 | Sample 2 | Sample 3 |
+|:---:|:---:|:---:|
+| **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer0.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE0.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer1.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE1.mp3) | **Decoder-only Transformer**<br>[▶ Listen](generated/generated_mid/NewDvorak-transformer2.mp3)<br><br>**TransformerVAE**<br>[▶ Listen](generated/generated_mid/NewDvorak-TransformerVAE2.mp3) |
 
 
