@@ -5,13 +5,23 @@ was intentionally separated from the Transformer-VAE implementation.
 
 It constrains sampled fields by event family, forces structural metric events
 when needed, advances positions monotonically within each bar, prevents empty
-bars, and limits long event chains without a metric token.
+bars, limits long event chains without a metric token, and discourages repeated
+notes and pitch motifs.
 """
+
+from collections import Counter, deque
 
 import torch
 
 
 class CompoundREMIGenerationConstraints:
+  """Stateful sampler for structurally valid, less repetitive Compound-REMI.
+
+  Pitch history is tracked separately for each channel/program pair by default,
+  so notes from different instruments do not create false motif matches. MIDI
+  drum channel 9 is excluded because repeated drum pitches are usually musical.
+  """
+
   def __init__(
     self,
     field2idx,
@@ -20,11 +30,53 @@ class CompoundREMIGenerationConstraints:
     positions_per_bar,
     device,
     max_tokens_without_metric=24,
-    temperature=0.9,
-    top_k=8,
+    temperature=1.0,
+    top_k=32,
     min_velocity=6,
-    min_duration=3
+    min_duration=3,
+    top_p=0.95,
+    repetition_window=24,
+    pitch_repetition_penalty=1.2,
+    pitch_repetition_decay=0.9,
+    max_consecutive_same_pitch=2,
+    motif_ngram_size=4,
+    max_motif_repeats=2,
+    motif_repetition_penalty=2.0,
+    interval_motif_size=4,
+    interval_repetition_penalty=0.75,
+    repetition_history_size=128,
+    repetition_scope="instrument",
+    drum_channel=9,
+    apply_repetition_to_drums=False
   ):
+    if temperature <= 0:
+      raise ValueError("temperature must be greater than zero.")
+    if top_p is not None and not 0 < top_p <= 1:
+      raise ValueError("top_p must be in the interval (0, 1].")
+    if repetition_window < 1:
+      raise ValueError("repetition_window must be at least 1.")
+    if not 0 < pitch_repetition_decay <= 1:
+      raise ValueError("pitch_repetition_decay must be in the interval (0, 1].")
+    if max_consecutive_same_pitch is not None and max_consecutive_same_pitch < 1:
+      raise ValueError("max_consecutive_same_pitch must be at least 1 or None.")
+    if motif_ngram_size is not None and motif_ngram_size < 2:
+      raise ValueError("motif_ngram_size must be at least 2 or None.")
+    if max_motif_repeats < 1:
+      raise ValueError("max_motif_repeats must be at least 1.")
+    if interval_motif_size is not None and interval_motif_size < 3:
+      raise ValueError("interval_motif_size must be at least 3 or None.")
+    if any(
+      penalty < 0
+      for penalty in (
+        pitch_repetition_penalty,
+        motif_repetition_penalty,
+        interval_repetition_penalty
+      )
+    ):
+      raise ValueError("Repetition penalties cannot be negative.")
+    if repetition_scope not in ("global", "instrument"):
+      raise ValueError('repetition_scope must be "global" or "instrument".')
+
     self.field2idx = field2idx
     self.token_attributes = token_attributes
     self.batch_size = batch_size
@@ -32,6 +84,25 @@ class CompoundREMIGenerationConstraints:
     self.max_tokens_without_metric = max_tokens_without_metric
     self.temperature = temperature
     self.top_k = top_k
+    self.top_p = top_p
+    self.repetition_window = repetition_window
+    self.pitch_repetition_penalty = pitch_repetition_penalty
+    self.pitch_repetition_decay = pitch_repetition_decay
+    self.max_consecutive_same_pitch = max_consecutive_same_pitch
+    self.motif_ngram_size = motif_ngram_size
+    self.max_motif_repeats = max_motif_repeats
+    self.motif_repetition_penalty = motif_repetition_penalty
+    self.interval_motif_size = interval_motif_size
+    self.interval_repetition_penalty = interval_repetition_penalty
+    self.repetition_scope = repetition_scope
+    self.drum_channel = drum_channel
+    self.apply_repetition_to_drums = apply_repetition_to_drums
+    self.repetition_history_size = max(
+      repetition_history_size,
+      repetition_window,
+      motif_ngram_size or 0,
+      interval_motif_size or 0
+    )
 
     self.field_idx = {field: i for i, field in enumerate(token_attributes)}
     self.ignore_idx = {field: field2idx[field]["IGNORE"] for field in token_attributes}
@@ -63,12 +134,27 @@ class CompoundREMIGenerationConstraints:
       if token.isdigit() and int(token) < positions_per_bar
     }
     self.tempo_indices = [field2idx["tempo"]["CONTINUE"], *self._float_indices("tempo")]
+    self.pitch_idx_to_value = {
+      idx: int(token)
+      for token, idx in field2idx["pitch"].items()
+      if token.isdigit()
+    }
+    self.pitch_value_to_idx = {
+      value: idx for idx, value in self.pitch_idx_to_value.items()
+    }
+    self.channel_idx_to_value = {
+      idx: int(token)
+      for token, idx in field2idx["channel"].items()
+      if token.isdigit()
+    }
 
     self.force_bar = torch.ones(batch_size, dtype=torch.bool, device=device)
     self.need_position_zero = torch.zeros(batch_size, dtype=torch.bool, device=device)
     self.current_position = torch.full((batch_size,), -1, dtype=torch.long, device=device)
     self.tokens_since_metric = torch.zeros(batch_size, dtype=torch.long, device=device)
     self.events_since_bar = torch.zeros(batch_size, dtype=torch.long, device=device)
+    self.pitch_histories = []
+    self.reset()
 
   def _numeric_indices(self, field, minimum=None, maximum=None):
     valid_indices = []
@@ -100,7 +186,64 @@ class CompoundREMIGenerationConstraints:
 
     return valid_indices
 
-  def _sample(self, field_logits, allowed_indices):
+  def reset(self, prompt=None):
+    """Reset generation state and optionally prime pitch history from a prompt."""
+    self.force_bar.fill_(True)
+    self.need_position_zero.zero_()
+    self.current_position.fill_(-1)
+    self.tokens_since_metric.zero_()
+    self.events_since_bar.zero_()
+    self.pitch_histories = [{} for _ in range(self.batch_size)]
+
+    if prompt is not None:
+      self._prime_pitch_history(prompt)
+
+  def _prime_pitch_history(self, prompt):
+    if prompt.dim() == 2:
+      prompt = prompt.unsqueeze(0)
+    if prompt.dim() != 3:
+      raise ValueError("prompt must have shape [sequence, fields] or [batch, sequence, fields].")
+    if prompt.size(0) not in (1, self.batch_size):
+      raise ValueError("prompt batch size must be 1 or match constraints.batch_size.")
+
+    prompt = prompt.detach().cpu()
+    for row in range(self.batch_size):
+      source_row = 0 if prompt.size(0) == 1 else row
+      for token in prompt[source_row]:
+        if token[self.family_idx].item() != self.note_idx:
+          continue
+
+        pitch_idx = token[self.field_idx["pitch"]].item()
+        channel_idx = token[self.field_idx["channel"]].item()
+        program_idx = token[self.field_idx["program"]].item()
+        if (
+          pitch_idx in self.pitch_idx_to_value
+          and not self._repetition_disabled_for_channel(channel_idx)
+        ):
+          self._get_pitch_history(row, channel_idx, program_idx).append(
+            self.pitch_idx_to_value[pitch_idx]
+          )
+
+  def _history_key(self, channel_idx, program_idx):
+    if self.repetition_scope == "global":
+      return None
+
+    return channel_idx, program_idx
+
+  def _get_pitch_history(self, row, channel_idx, program_idx):
+    key = self._history_key(channel_idx, program_idx)
+    if key not in self.pitch_histories[row]:
+      self.pitch_histories[row][key] = deque(maxlen=self.repetition_history_size)
+
+    return self.pitch_histories[row][key]
+
+  def _repetition_disabled_for_channel(self, channel_idx):
+    return (
+      not self.apply_repetition_to_drums
+      and self.channel_idx_to_value.get(channel_idx) == self.drum_channel
+    )
+
+  def _sample(self, field_logits, allowed_indices, penalties=None, banned_indices=None):
     if len(allowed_indices) == 0:
       raise ValueError("No valid tokens are available for this field.")
 
@@ -113,17 +256,163 @@ class CompoundREMIGenerationConstraints:
     invalid_mask[allowed_indices] = False
     field_logits[:, invalid_mask] = -torch.inf
 
+    if penalties is not None:
+      penalties = torch.as_tensor(
+        penalties,
+        dtype=field_logits.dtype,
+        device=field_logits.device
+      )
+      field_logits -= penalties
+
+    if banned_indices:
+      field_logits[:, list(banned_indices)] = -torch.inf
+
+    if not torch.isfinite(field_logits).any(dim=-1).all():
+      raise FloatingPointError("No finite logits remain after applying generation constraints.")
+
     if self.top_k is not None and self.top_k > 0:
       k = min(self.top_k, len(allowed_indices))
       top_values = torch.topk(field_logits, k=k, dim=-1).values
       cutoff = top_values[:, -1].unsqueeze(-1)
       field_logits[field_logits < cutoff] = -torch.inf
 
+    if self.top_p is not None and self.top_p < 1:
+      sorted_logits, sorted_indices = torch.sort(field_logits, descending=True, dim=-1)
+      cumulative_probabilities = torch.softmax(sorted_logits, dim=-1).cumsum(dim=-1)
+      remove_sorted = cumulative_probabilities > self.top_p
+      remove_sorted[:, 1:] = remove_sorted[:, :-1].clone()
+      remove_sorted[:, 0] = False
+      remove_mask = torch.zeros_like(remove_sorted).scatter(
+        1,
+        sorted_indices,
+        remove_sorted
+      )
+      field_logits[remove_mask] = -torch.inf
+
     probabilities = torch.softmax(field_logits, dim=-1)
-    if not torch.isfinite(probabilities).all():
+    if not torch.isfinite(probabilities).all() or (probabilities.sum(dim=-1) <= 0).any():
       raise FloatingPointError("Non-finite generation probabilities.")
 
     return torch.multinomial(probabilities, num_samples=1)
+
+  def _pitch_penalties_and_bans(
+    self,
+    row,
+    field_logits,
+    channel_idx=None,
+    program_idx=None
+  ):
+    """Build per-pitch penalties using recent notes and previously seen motifs."""
+    penalties = torch.zeros(
+      field_logits.size(-1),
+      dtype=torch.float,
+      device=field_logits.device
+    )
+    banned_indices = set()
+
+    if self._repetition_disabled_for_channel(channel_idx):
+      return penalties, banned_indices
+
+    history = list(self._get_pitch_history(row, channel_idx, program_idx))
+
+    recent_history = history[-self.repetition_window:]
+    for distance, pitch in enumerate(reversed(recent_history)):
+      pitch_idx = self.pitch_value_to_idx.get(pitch)
+      if pitch_idx is not None:
+        penalties[pitch_idx] += (
+          self.pitch_repetition_penalty
+          * self.pitch_repetition_decay ** distance
+        )
+
+    if self.max_consecutive_same_pitch is not None:
+      repeat_count = 0
+      for pitch in reversed(history):
+        if pitch != history[-1]:
+          break
+        repeat_count += 1
+
+      if history and repeat_count >= self.max_consecutive_same_pitch:
+        repeated_pitch_idx = self.pitch_value_to_idx.get(history[-1])
+        if repeated_pitch_idx is not None:
+          banned_indices.add(repeated_pitch_idx)
+
+    if self.motif_ngram_size is not None and len(history) >= self.motif_ngram_size - 1:
+      size = self.motif_ngram_size
+      motif_counts = Counter(
+        tuple(history[start:start + size])
+        for start in range(len(history) - size + 1)
+      )
+      prefix = history[-(size - 1):]
+
+      for pitch_idx in self.note_fields["pitch"]:
+        pitch = self.pitch_idx_to_value[pitch_idx]
+        repeat_count = motif_counts[tuple([*prefix, pitch])]
+        penalties[pitch_idx] += self.motif_repetition_penalty * repeat_count
+
+        if repeat_count >= self.max_motif_repeats:
+          banned_indices.add(pitch_idx)
+
+    if self.interval_motif_size is not None and len(history) >= self.interval_motif_size - 1:
+      size = self.interval_motif_size
+      interval_counts = Counter(
+        tuple(
+          history[index + 1] - history[index]
+          for index in range(start, start + size - 1)
+        )
+        for start in range(len(history) - size + 1)
+      )
+      prefix = history[-(size - 1):]
+
+      for pitch_idx in self.note_fields["pitch"]:
+        pitch = self.pitch_idx_to_value[pitch_idx]
+        candidate = [*prefix, pitch]
+        intervals = tuple(
+          candidate[index + 1] - candidate[index]
+          for index in range(size - 1)
+        )
+        penalties[pitch_idx] += (
+          self.interval_repetition_penalty * interval_counts[intervals]
+        )
+
+    if len(banned_indices) >= len(self.note_fields["pitch"]):
+      minimum_penalty = min(
+        penalties[pitch_idx].item()
+        for pitch_idx in self.note_fields["pitch"]
+      )
+      banned_indices = {
+        pitch_idx
+        for pitch_idx in banned_indices
+        if penalties[pitch_idx].item() > minimum_penalty
+      }
+
+    return penalties, banned_indices
+
+  def _sample_pitch(self, row, field_logits, channel_idx, program_idx):
+    penalties, banned_indices = self._pitch_penalties_and_bans(
+      row,
+      field_logits,
+      channel_idx,
+      program_idx
+    )
+    return self._sample(
+      field_logits,
+      self.note_fields["pitch"],
+      penalties=penalties,
+      banned_indices=banned_indices
+    )[0, 0]
+
+  def _record_sampled_pitches(self, predictions, is_note):
+    for row_tensor in torch.where(is_note)[0]:
+      row = row_tensor.item()
+      channel_idx = predictions[row, 0, self.field_idx["channel"]].item()
+      if self._repetition_disabled_for_channel(channel_idx):
+        continue
+
+      program_idx = predictions[row, 0, self.field_idx["program"]].item()
+      pitch_idx = predictions[row, 0, self.field_idx["pitch"]].item()
+      self._get_pitch_history(row, channel_idx, program_idx).append(
+        self.pitch_idx_to_value[pitch_idx]
+      )
 
   def sample_next(self, logits):
     predictions = torch.empty(
@@ -157,11 +446,20 @@ class CompoundREMIGenerationConstraints:
 
     note_rows = torch.where(is_note)[0]
     for field, allowed_indices in self.note_fields.items():
-      if len(note_rows) > 0:
+      if field != "pitch" and len(note_rows) > 0:
         predictions[note_rows, 0, self.field_idx[field]] = self._sample(
           logits[field][note_rows, -1, :],
           allowed_indices
         )[:, 0]
+
+    for row_tensor in note_rows:
+      row = row_tensor.item()
+      predictions[row, 0, self.field_idx["pitch"]] = self._sample_pitch(
+        row,
+        logits["pitch"][row:row + 1, -1, :],
+        predictions[row, 0, self.field_idx["channel"]].item(),
+        predictions[row, 0, self.field_idx["program"]].item()
+      )
 
     controller_rows = torch.where(is_controller)[0]
     for field, allowed_indices in self.controller_fields.items():
@@ -231,6 +529,7 @@ class CompoundREMIGenerationConstraints:
       torch.zeros_like(self.tokens_since_metric),
       self.tokens_since_metric + 1
     )
+    self._record_sampled_pitches(predictions, is_note)
 
     return predictions, is_bar
 
@@ -246,7 +545,19 @@ def generate_constrained_tokens(
   progress=lambda values: values
 ):
   """Decode tokens while delegating structural stability to ``constraints``."""
-  x = prompt.repeat(constraints.batch_size, 1, 1)
+  prompt = prompt.to(constraints.device)
+  if prompt.dim() == 2:
+    prompt = prompt.unsqueeze(0)
+  if prompt.dim() != 3:
+    raise ValueError("prompt must have shape [sequence, fields] or [batch, sequence, fields].")
+  if prompt.size(0) == 1:
+    x = prompt.repeat(constraints.batch_size, 1, 1)
+  elif prompt.size(0) == constraints.batch_size:
+    x = prompt.clone()
+  else:
+    raise ValueError("prompt batch size must be 1 or match constraints.batch_size.")
+
+  constraints.reset(prompt)
   generated_tokens = [[] for _ in range(constraints.batch_size)]
   bars_generated = torch.zeros(
     constraints.batch_size,
