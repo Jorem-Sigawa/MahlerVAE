@@ -3,7 +3,7 @@ import os
 
 import torch
 from tqdm import tqdm
-from .generation_constraints import CompoundREMIGenerationConstraints, generate_constrained_tokens
+from .generation_constraints1 import CompoundREMIGenerationConstraints, generate_constrained_tokens
 
 token_attributes = ["family", "bar_position", "channel", "program", "pitch", "velocity", "duration", "tempo", "time_signature", "controller_type", "controller_value"]
 
