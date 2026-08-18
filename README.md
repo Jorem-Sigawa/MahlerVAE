@@ -281,7 +281,7 @@ Here's some sample generations from both the TransformerVAE model and decoder-on
 </table>
 
 ### Mahler
-Generation begins at 1:16
+
 https://github.com/user-attachments/assets/dc279bb4-4c18-4010-867f-25ee925f5538
 
 
