@@ -173,6 +173,10 @@ This is the core idea motivating the architecture: can we move from one musical 
 
 ### Generated samples
 Here's some sample generations from both the TransformerVAE model and decoder-only transformer model for comparison. We use input prompts, all belonging in the validation set, from Dvorak, Beethoven, and Brahms. At the end, we use the TransformerVAE model for interpolative generation on a Mahler prompt.
+> [!WARNING]
+> Some sections may become spontaneously loud. Keep volume at a minimal level.
+
+> These midi samples were rendered with the Musyng Kite soundfount.
 
 ### Beethoven
 
@@ -282,6 +286,8 @@ Here's some sample generations from both the TransformerVAE model and decoder-on
 </table>
 
 ### Mahler
+
+This interpolative generation uses bars 29 to 44 and bars 125 to 152 of *Chorus Mysticus* from Mahler's 8th Symphony as the start and end prompts, respectively. Generation begins at 1:16. Through latent-space interpolation, the model develops a clear long-range musical trajectory: an initially restrained, chorale-like string texture gradually becomes denser and more tense, with increasingly prominent tremolo strings driving the piece towards a climax. 
 
 https://github.com/user-attachments/assets/dc279bb4-4c18-4010-867f-25ee925f5538
 
