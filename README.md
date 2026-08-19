@@ -118,11 +118,11 @@ Two sample models--a TransformerVAE and a decoder-only transformer--was trained 
 </p>
 
 #### Training sets
-- [Late Romantic Dataset](https://drive.google.com/drive/folders/1HFO9hRI_NWQGQOf2BiDTSyS6PQ9D3naj?usp=drive_link)
+> [Late Romantic Dataset](https://drive.google.com/drive/folders/1HFO9hRI_NWQGQOf2BiDTSyS6PQ9D3naj?usp=drive_link)
 
 A planned extension to training the model with the SymphonyNet dataset is also currently being worked on. In the meantime, for personal experiments, you may also download the SymphonyNet dataset from their official site:
 
-- [SymphonyNet](https://symphonynet.github.io/)
+> [SymphonyNet](https://symphonynet.github.io/)
 
 #### Plots
 <p align="center">
@@ -153,11 +153,13 @@ As shown in the figure above, all 64 latent dimensions are active (that is, $KL_
 
 
 #### Checkpoints
-The sample model checkpoints can be downloaded here. There are two checkpoints. *my_ckpt.pt* contains weights at the 100k'th iteration, while *best_ckpt.pt* contains weights at the iteration where the validation loss was smallest for the entire 100k training run.
+<p align="justify">
+The sample model checkpoints can be downloaded here. There are two checkpoints. <em>my_ckpt.pt</em> contains weights at the 100k'th iteration, while <em>best_ckpt.pt</em> contains weights at the iteration where the validation loss was smallest for the entire 100k training run.
+</p>
 
-[Download TransformerVAE model checkpoints here](https://drive.google.com/drive/folders/1Q_jipHsfXz33HYqb0uqnn-U-QxKU4law?usp=drive_link)
+> [Download TransformerVAE model checkpoints here](https://drive.google.com/drive/folders/1Q_jipHsfXz33HYqb0uqnn-U-QxKU4law?usp=drive_link)
 
-[Download decoder-only transformer model checkpoints here](https://drive.google.com/drive/folders/14pYicsTmfp9jJ0XKpKtyhHKOmbTBg2Hw?usp=drive_link)
+> [Download decoder-only transformer model checkpoints here](https://drive.google.com/drive/folders/14pYicsTmfp9jJ0XKpKtyhHKOmbTBg2Hw?usp=drive_link)
 
 ## Generation
 
@@ -193,7 +195,10 @@ This is the core idea motivating the architecture: can we move from one musical 
 
 
 ### Generated samples
+<p align="justify">
 Here's some sample generations from both the TransformerVAE model and decoder-only transformer model for comparison. We use input prompts, all belonging in the validation set, from Dvorak, Beethoven, and Brahms. At the end, we use the TransformerVAE model for interpolative generation on a Mahler prompt.
+</p>
+
 > [!WARNING]
 > Some sections may become spontaneously loud. Keep volume at a minimal level.
 
@@ -308,16 +313,24 @@ Here's some sample generations from both the TransformerVAE model and decoder-on
 
 ### Mahler
 
-This interpolative generation uses bars 29 to 44 and bars 125 to 152 of *Chorus Mysticus* from Mahler's 8th Symphony as the start and end prompts, respectively. Generation begins at 1:16. Through latent-space interpolation, the model develops a clear long-range musical trajectory: an initially restrained, chorale-like string texture gradually becomes denser and more tense, with increasingly prominent tremolo strings driving the piece towards a climax. 
+<p align="justify">
+This interpolative generation uses bars 29 to 44 and bars 125 to 152 of <em>Chorus Mysticus</em> from Mahler's 8th Symphony as the start and end prompts, respectively. Generation begins at 1:16. Through latent-space interpolation, the model develops a clear long-range musical trajectory: an initially restrained, chorale-like string texture gradually becomes denser and more tense, with increasingly prominent tremolo strings driving the piece towards a climax.
+</p>
 
 https://github.com/user-attachments/assets/dc279bb4-4c18-4010-867f-25ee925f5538
 
 ## Limitations
+
+<p align="justify">
 Autoregressive degeneration remains a massive problem, with some samples losing coherence after only 30 seconds of generation. Furthermore, this incoherence problem appears to be highly dependent on where in a prompt the model starts generating, with stable and relaxed sections producing articulate generations, and dissonant, rising sections producing noticeably disjointed and confused music. However, this should be taken into account with the fact that we have used a very limited, 281-track dataset. It is very probable that significant improvements in coherence can be made by first pretraining on a much larger corpus such as the SymphonyNet dataset and then fine-tuning.
+</p>
 
 ## How to Use
 
-
+1. Go over to [Google Colab](https://colab.research.google.com/)
+2. Click 'Upload notebook' then choose 'Github'
+3. Paste the Github URL: https://github.com/Jorem-Sigawa/MahlerVAE
+4. Choose from the four scripts available: each one contains instructions on how to properly run them.
 
 
 
