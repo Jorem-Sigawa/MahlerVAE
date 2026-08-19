@@ -69,7 +69,7 @@ There are two terms in the loss function that we are trying to optimize:
 
 $$\mathcal{L}_{\mathrm{KL}}=\frac{1}{2DB}\sum_{i=1}^{D}\sum_{j=1}^{B}\left(\sigma_{ij}^{2}+\mu_{ij}^{2}-1-\log\sigma_{ij}^{2}\right)$$
       
-2. **Reconstruction loss ($$L_{x}$$)**: standard cross-entropy loss between logits and labels. Since we are using a compound word tokenization scheme, we need to compute a loss for each field. If $$W_{F}$$ denotes the field weights (set via *config.yaml*), the loss term is given by:
+2. **Reconstruction loss ($$L_{x}$$)**: standard cross-entropy loss between logits and labels. Since we are using a compound word tokenization scheme, we need to compute a loss for each field. If $$W_{F}$$ denotes the field weights, the loss term is given by:
 
 $$\mathcal{L_{x}}=\frac{\sum_F W_F \cdot \mathrm{CrossEntropy}(\mathrm{logits}_F,\mathrm{labels}_F)}{\sum_F W_F}$$
    
