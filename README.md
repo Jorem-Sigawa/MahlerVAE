@@ -38,7 +38,7 @@ We use a [Compound Word tokenization scheme](https://ojs.aaai.org/index.php/AAAI
 ## Architecture
 
 <p align="justify">
-The model uses the Optimus architecture presented in [this paper](https://arxiv.org/pdf/2004.04092). This time, however, we use it as a MIDI generation model.
+The model uses the Optimus architecture presented in <a href="https://arxiv.org/pdf/2004.04092">this paper</a>. This time, however, we use it as a MIDI generation model.
 The idea is that, instead of using only a transformer decoder, a transformer encoder first maps a sequence of tokens into parameters of a low-dimensional latent distribution $q(z|x)$. This distribution is usually intended to follow a Gaussian distribution, so the encoder outputs parameters $\mu$ and $\log(\sigma^2)$. Thus, during training, the model learns a continuous latent space intended to capture higher-level musical characteristics. We then take a sample $\mathcal{z}$ from the learned latent variable through a reparameterization trick:
 </p>
 
@@ -332,5 +332,12 @@ Autoregressive degeneration remains a massive problem, with some samples losing 
 3. Paste the Github URL: https://github.com/Jorem-Sigawa/MahlerVAE
 4. Choose from the four scripts available: each one contains instructions on how to properly run them.
 
-
+<p align="center">
+  <img
+    src="assets/torchview.svg"
+    alt="torchview.svg"
+    width="1100"
+  ><br>
+  <i>torchview.svg</i>
+</p>
 
