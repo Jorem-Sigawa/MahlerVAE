@@ -11,11 +11,21 @@
 <p align="justify">
 This project sprang from MIT 6.S191's Lab 1 Exercise, which was about MIDI music generation. Their model used an LSTM to generate monophonic Irish folk tunes.
 Inspired, I wanted to take it a step further by building a more powerful GPT model for polyphonic generation of symphonies in the style of Gustav Mahler.
-"There was a similar venture called MahlerNet, but their model used LSTMs"
-Hence, I built and trained a GPT model (seq_length=512) in PyTorch using a small dataset consisting of 281 pieces by Late Romantic composers--specifically, pieces composed by Beethoven, 
-Brahms, Bruckner, Dvorak, Holst, Mahler, Sibelius, Strauss, Tchaikovsky, and Wagner.
-The GPT model was able to generate convincing continuations given a musical idea, but it could not achieve long-term coherence, frequently generated repetitive motifs, and 
-most importantly, lacked musical direction. 
+</p>
+
+> There was a similar venture called MahlerNet, but their model used a recurrent neural network.
+
+<p align="justify">
+Hence, I built and trained a GPT model (<em>seq_length=512</em>) in PyTorch using a small dataset consisting of 281 pieces by Late Romantic composers--specifically, pieces composed by Beethoven, Brahms, Bruckner, Dvorak, Holst, Mahler, Sibelius, Strauss, Tchaikovsky, and Wagner.
+The GPT model was able to generate convincing continuations of a musical idea, but it could not achieve long-term coherence and, <strong>most importantly, lacked musical direction</strong>. Imagine a song being stuck at a verse the entire time! 
+</p>
+
+<p align="justify">
+At the same time, I was also learning about deep generative models such as variational autoencoders (VAEs) that use a latent space for generation. Google's <em>MusicVAE</em> is one example of VAE for MIDI music generation. It explored generating a musical sequence by encoding two prompts A and B, and decoding intermediate points between their representations in latent space (i.e., it asked the question: "What does the music sound like in between A and B?"). However, it did not explore continuously traversing that line while a piece is being autoregressively generated. <em>MIDI-VAE</em> came much closer to this, but it was smoothly interpolating between adjacent bars, not radically different musical passages requiring large-scale routes. Other VAEs have studied musical direction, but they use more involved mechanisms using controllable latent dimensions and supervised latent representation, and some of them only handle monophonic generation. 
+</p>
+
+<p align="justify">
+The implemented model here, <em>MahlerVAE</em> is much simpler. It explores whether a continuous interpolation between the encodings of two expressively different orchestral passages can guide an autoregressive transformer model to polyphonically generate a coherent large-scale musical trajectory, without explicit labels or controls for emotion, tension, form, or musical direction. In other words, it asks whether the latent space can organize high-level musical characteristics meaningfully such that simply moving between two learned presentations using a form of interpolation (here, we use linear interpolation) produces a convincing musical development between them.
 </p>
 
 ## Tokenization scheme
@@ -164,7 +174,7 @@ The sample model checkpoints can be downloaded here. There are two checkpoints. 
 ## Generation
 
 <p align="justify">
-A crude form of generation involves simply passing an input prompt to the model and sampling from the "softmaxed" logits of the decoder autoregressively. However, without other guardrails in place, the model tends to produce long, repetitive, unbroken chains of controller or note events and with very sparse emissions of metric and positional tokens (see the <em>generation_constraints.py</em> files for more information). This does not mean that the model has failed to learn, but we do need a robust generation scheme to harness its full potential. Admittedly, such a task was simply beyond my depth, and I turned to Codex for assisted stable generation. It produced two files: <em>generation_constraints1.py</em> and <em>generation_constraints2.py</em>. <em>generation_constraints2.py</em> appears to excel for non-interpolative generation, successfully avoiding repetitive motifs, whereas we found <em>generation_constraints1.py</em> better for interpolative generation, but you may experiment with using <em>generation_constraints2.py</em> also.
+A crude form of generation involves simply passing an input prompt to the trained model and sampling from the "softmaxed" logits of the decoder autoregressively. However, without other guardrails in place, the model tends to produce long, repetitive, unbroken chains of controller or note events and with very sparse emissions of metric and positional tokens (see the <em>generation_constraints.py</em> files for more information). This does not mean that the model has failed to learn, but we do need a robust generation scheme to harness its full potential. Admittedly, such a task was simply beyond my depth, and I turned to Codex for assisted stable generation. It produced two files: <em>generation_constraints1.py</em> and <em>generation_constraints2.py</em>. <em>generation_constraints2.py</em> appears to excel for non-interpolative generation, successfully avoiding repetitive motifs, whereas we found <em>generation_constraints1.py</em> better for interpolative generation, but you may experiment with using <em>generation_constraints2.py</em> also.
 </p>
 
 ### Interpolation
