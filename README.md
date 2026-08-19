@@ -36,12 +36,15 @@ We use a [Compound Word tokenization scheme](https://ojs.aaai.org/index.php/AAAI
 
 
 ## Architecture
+
+<p align="justify">
 The model uses the Optimus architecture presented in [this paper](https://arxiv.org/pdf/2004.04092). This time, however, we use it as a MIDI generation model.
 The idea is that, instead of using only a transformer decoder, a transformer encoder first maps a sequence of tokens into parameters of a low-dimensional latent distribution $q(z|x)$. This distribution is usually intended to follow a Gaussian distribution, so the encoder outputs parameters $\mu$ and $\log(\sigma^2)$. Thus, during training, the model learns a continuous latent space intended to capture higher-level musical characteristics. We then take a sample $\mathcal{z}$ from the learned latent variable through a reparameterization trick:
+</p>
 
 $$z = \mu + \epsilon \odot \exp\left(\frac{1}{2} \log(\sigma^2)\right)$$
 
-where we sample $\epsilon$ ~ $\mathcal{N}(0, \mathcal{I})$. During decoding, z is projected into a MEM vector $$h_{MEM}$$: a key that can be used by the decoder's self-attention blocks.
+where we sample $\epsilon$ ~ $\mathcal{N}(0, \mathcal{I})$. During decoding, $\mathcal{z}$ is projected into a MEM vector $$h_{MEM}$$: a key that can be used by the decoder's self-attention blocks.
 Specifically, $$h_{MEM}$$ is an additional key vector (and hence a value vector) that queries can attend to, as shown below.
 
 > The authors of the Optimus architecture proposed two different forms of latent injection: *Memory*, the one we use, and *Embedding*. *Memory* was found to be significantly more effective than *Embedding*, although combining both gave slightly better performance.
@@ -55,8 +58,9 @@ Specifically, $$h_{MEM}$$ is an additional key vector (and hence a value vector)
   <i>Visualization purposes only. This does not reflect values in the actual attention matrices in the model.</i>
 </p>
 
-The intended effect of this memory vector is to improve long-term coherence by providing the autoregressive decoder with persistent access to the latent representation $\mathcal{z}$ across all attention layers, 
-rather than forcing all information to propagate solely through previously generated tokens, as is the case with decoder-only transformers.
+<p align="justify">
+The purpose of this memory vector is to provide the autoregressive decoder with persistent access to the latent representation $\mathcal{z}$ across all attention layers, rather than forcing all information to propagate solely through previously generated tokens, as is the case with decoder-only transformers.
+</p>
 
 ## Training
 There are two terms in the loss function that we are trying to optimize:
@@ -79,10 +83,14 @@ $$L_{total} = L_{x} + \beta \cdot L_{KL}$$
 where $\beta$ is the weight we assign to the KL loss. 
 
 ### Preventing posterior collapse
+<p align="justify">
 Perhaps the most common failure mode of Transformer-VAEs is posterior collapse--a phenomenon where the decoder is strong enough that it learns to completely ignore the latent variable produced by the encoder, in which case the model effectively collapses to a decoder-only transformer. It may still perform well, but it loses the benefit given by a VAE architecture, which is the learned latent representation. We have implemented three ways to avoid this:
+</p>
 
-1. **Make the decoder intentionally weaker**\
-   Perhaps the most obvious solution, we intentionally weaken the decoder so that it learns to use the latent representation $\mathcal{z}$. In *config1.yaml*, which is the configuration we use to train our sample model,      we use the following hyperparameters for both encoder and decoder:
+1. **Make the decoder intentionally weaker**
+   <p align="justify">
+   Perhaps the most obvious solution, we intentionally weaken the decoder so that it learns to use the latent representation $\mathcal{z}$. In <em>config1.yaml</em>, which is the configuration we use to train our sample model,      we use the following hyperparameters for both encoder and decoder:
+   </p>
    
               # Model
               latent_dim: 64
@@ -93,14 +101,21 @@ Perhaps the most common failure mode of Transformer-VAEs is posterior collapse--
               dropout: 0.1
               num_layers: 4
    
-2. **KL thresholding**\
-   Normally, the $L_{KL}$ objective tries to drive each of its elements $KL_{i}$ towards zero in a step known as regularization. However, that pushes the i'th dimension's posterior to look nearly identical to the prior, carrying very little information about     $x$. With thresholding, we set some threshold *dim_target_kl* (via *config.yaml*) below which the objective no longer tries to optimize that dimension's $KL_{i}$. In the code, this is equivalent to manually setting        $KL_{i}$ to zero once its value goes below dim_target_kl. Thus, KL thresholding gives each latent dimension some free capacity to encode information
-3. **KL annealing**\
-   KL annealing lets the model learn to use $z$ before heavily regularizing $z$. Instead of starting training with the full KL weight $\beta$, we define a *max_beta* that we gradually climb up to during the course of training. *ratio_zero* defines a threshold such that the current $\beta$ is zero if *percent_iteration* = *num_iterations*/*total_iterations* is below *ratio_zero*, after which the current $\beta$ linearly increases to max_beta until *percent_iteration* reaches *ratio_zero* + *ratio_increase*. The hyperparameters *max_beta*, *ratio_zero*, and *ratio_increase* must be defined in *config.yaml*.
+3. **KL thresholding**
+   <p align="justify">
+   Normally, the $L_{KL}$ objective tries to drive each of its elements $KL_{i}$ towards zero in a step known as regularization. However, that pushes the i'th dimension's posterior to look nearly identical to the prior, carrying very little information about     $x$. With thresholding, we set some threshold <em>dim_target_kl</em> (via <em>config.yaml</em>) below which the objective no longer tries to optimize that dimension's $KL_{i}$. In the code, this is equivalent to manually setting        $KL_{i}$ to zero once its value goes below dim_target_kl. Thus, KL thresholding gives each latent dimension some free capacity to encode information
+   </p>
+   
+5. **KL annealing**
+   <p align="justify">
+   KL annealing lets the model learn to use $z$ before heavily regularizing $z$. Instead of starting training with the full KL weight $\beta$, we define a <em>max_beta</em> that we gradually climb up to during the course of training. <em>ratio_zero</em> defines a threshold such that the current $\beta$ is zero if <em>percent_iteration</em> = <em>num_iterations</em>/<em>total_iterations</em> is below <em>ratio_zero</em>, after which the current $\beta$ linearly increases to max_beta until <em>percent_iteration</em> reaches <em>ratio_zero</em> + <em>ratio_increase</em>. The hyperparameters <em>max_beta</em>, <em>ratio_zero</em>, and <em>ratio_increase</em> must be defined in <em>config.yaml</em>.
+   </p>
 
 ### Results from training the sample model
 
-Two sample models--a TransformerVAE and a decoder-only transformer--was trained using the aforementioned 281-track dataset and using the configuration *config1.yaml* for 100k iterations. A validation set was also constructed by taking one track from each composer (except Strauss), giving us 9 tracks for our validation set. The entire 290-track dataset can be downloaded here:
+<p align="justify">
+Two sample models--a TransformerVAE and a decoder-only transformer--was trained using the aforementioned 281-track dataset and using the configuration <em>config1.yaml</em> for 100k iterations. A validation set was also constructed by taking one track from each composer (except Strauss), giving us 9 tracks for our validation set. The entire 290-track dataset can be downloaded here:
+</p>
 
 #### Training sets
 - [Late Romantic Dataset](https://drive.google.com/drive/folders/1HFO9hRI_NWQGQOf2BiDTSyS6PQ9D3naj?usp=drive_link)
@@ -122,7 +137,7 @@ A planned extension to training the model with the SymphonyNet dataset is also c
 Losses from each field, reconstruction and KL losses, validation losses, as well as the training run of the decoder-only transformer and other metrics may be viewed on Comet.
 [View the full training run on Comet!](https://www.comet.com/jorem-sigawa/mahlervae/view/new/panels)
 
-It is interesting to note that nearly all losses of both TransformerVAE and decoder-only transformer models converged to roughly the same value. 
+Nearly all losses of both TransformerVAE and decoder-only transformer models converged to roughly the same value. 
 > Note that due to Colab's session limits, the TransformerVAE's run was fragmented from 0 to 70k and 70k to 100k.
 
 <p align="center">
@@ -145,10 +160,16 @@ The sample model checkpoints can be downloaded here. There are two checkpoints. 
 [Download decoder-only transformer model checkpoints here](https://drive.google.com/drive/folders/14pYicsTmfp9jJ0XKpKtyhHKOmbTBg2Hw?usp=drive_link)
 
 ## Generation
-A crude form of generation involves simply passing an input prompt to the model and sampling from the "softmaxed" logits of the decoder autoregressively. However, without other guardrails in place, the model tends to produce long, repetitive, unbroken chains of controller or note events and with very sparse emissions of metric and positional tokens (see the *generation_constraints.py* files for more information). This does not mean that the model has failed to learn, but we do need a robust generation scheme to harness its full potential. Admittedly, such a task was simply beyond my depth, and I turned to Codex for assisted stable generation. It produced two files: *generation_constraints1.py* and *generation_constraints2.py*. *generation_constraints2.py* appears to excel for non-interpolative generation, successfully avoiding repetitive motifs, whereas we found *generation_constraints1.py* better for interpolative generation, but you may experiment with using *generation_constraints2.py* also.
+
+<p align="justify">
+A crude form of generation involves simply passing an input prompt to the model and sampling from the "softmaxed" logits of the decoder autoregressively. However, without other guardrails in place, the model tends to produce long, repetitive, unbroken chains of controller or note events and with very sparse emissions of metric and positional tokens (see the <em>generation_constraints.py</em> files for more information). This does not mean that the model has failed to learn, but we do need a robust generation scheme to harness its full potential. Admittedly, such a task was simply beyond my depth, and I turned to Codex for assisted stable generation. It produced two files: <em>generation_constraints1.py</em> and <em>generation_constraints2.py</em>. <em>generation_constraints2.py</em> appears to excel for non-interpolative generation, successfully avoiding repetitive motifs, whereas we found <em>generation_constraints1.py</em> better for interpolative generation, but you may experiment with using <em>generation_constraints2.py</em> also.
+</p>
 
 ### Interpolation
+
+<p align="justify">
 This is the core idea motivating the architecture: can we move from one musical idea (say, a quiet chorale) to another (say, a symphonic climax) by moving through the latent space? We encode two prompts: the start prompt and the end prompt, forming the endpoints of our path in latent space. We then use linear interpolation to move through latent space:
+</p>
 
     def interpolated_latent(bars_generated):
       alpha = ((bars_generated.float() - interpolation_start_bar) / interpolation_length_bars).clamp(0.0, 1.0).unsqueeze(1)
@@ -291,9 +312,10 @@ This interpolative generation uses bars 29 to 44 and bars 125 to 152 of *Chorus 
 
 https://github.com/user-attachments/assets/dc279bb4-4c18-4010-867f-25ee925f5538
 
+## Limitations
+Autoregressive degeneration remains a massive problem, with some samples losing coherence after only 30 seconds of generation. Furthermore, this incoherence problem appears to be highly dependent on where in a prompt the model starts generating, with stable and relaxed sections producing articulate generations, and dissonant, rising sections producing noticeably disjointed and confused music. However, this should be taken into account with the fact that we have used a very limited, 281-track dataset. It is very probable that significant improvements in coherence can be made by first pretraining on a much larger corpus such as the SymphonyNet dataset and then fine-tuning.
 
-
-
+## How to Use
 
 
 
