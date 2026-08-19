@@ -25,7 +25,7 @@ At the same time, I was also learning about deep generative models such as varia
 </p>
 
 <p align="justify">
-The implemented model here, <em>MahlerVAE</em> is much simpler. It explores whether a continuous interpolation between the encodings of two expressively different orchestral passages can guide an autoregressive transformer model to polyphonically generate a coherent large-scale musical trajectory, without explicit labels or controls for emotion, tension, form, or musical direction. In other words, it asks whether the latent space can organize high-level musical characteristics meaningfully such that simply moving between two learned presentations using a form of interpolation (here, we use linear interpolation) produces a convincing musical development between them.
+The implemented model here, <em>MahlerVAE</em> is much simpler. It explores whether a continuous interpolation between the encodings of two expressively different orchestral passages can guide an autoregressive transformer model to polyphonically generate a coherent large-scale musical trajectory, without explicit labels or controls for emotion, tension, form, or musical direction. In other words, we try to determine whether the latent space can organize high-level musical characteristics meaningfully such that simply moving between two learned presentations using a form of interpolation (here, we use linear interpolation) produces a convincing musical development between them.
 </p>
 
 ## Tokenization scheme
