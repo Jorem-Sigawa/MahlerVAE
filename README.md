@@ -193,7 +193,7 @@ This is the core idea motivating the architecture: can we move from one musical 
 - It is recommended you use a multiple of 4 + 1 (4n + 1) for your *bar_start*.
 - For interpolative generation, you may extract samples from your input prompt between *bar_start* and *bar_end* using *sample_bars.ipynb*
 - It is recommended to keep *interpolation_start_bar* low (e.g., 1 or 5). Otherwise, the model may start interpolating when degeneration has started to occur.
-- The model must produce *interpolation_length_bars* before reaching the end of your *generation_length* for complete interpolation. As a rule of thumb, there are about 50 tokens per bar, thus if your *interpolation_length_bars* = 24, you must have at least a *generation_length* = 50*200 = 1200, though we recommend thrice (3600) this to be sure.
+- The model must produce *interpolation_length_bars* before reaching the end of your *generation_length* for complete interpolation. As a rule of thumb, there are about 50 tokens per bar, thus if your *interpolation_length_bars* = 24, you must have at least a *generation_length* = 50*24 = 1200, though we recommend thrice (3600) this to be sure.
 - Using *my_ckpt.py* over *best_ckpt.pt* almost always produced better results.
 - You may choose which generation_constraints.py file to use by going over to generations.py and changing
 
